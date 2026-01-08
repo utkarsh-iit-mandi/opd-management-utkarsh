@@ -100,6 +100,33 @@ This project currently focuses on OPD-level management.
 
 Not intended for production deployment in its current form.
 
+
+## 📸 Screenshots
+
+### Login Page
+![Login Page](screenshots/login.png)
+
+### Doctor Dashboard
+![Doctor Dashboard](screenshots/dashboard.png)
+
+
+### Patient Registration
+![Patient Registration](screenshots/visit.png)
+
+### Patient History
+![Patient History](screenshots/history.png)
+
+
+### OPD Register
+![OPD Register](screenshots/opdregister.png)
+
+### Patient Directory
+![Patient Directory](screenshots/patientdirectory.png)
+
+### Analytics Dashboard
+![Analytics Dashboard](screenshots/analytics.png)
+
+
 🔮 Future Enhancements
 
 Appointment scheduling system
