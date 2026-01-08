@@ -18,47 +18,48 @@ This project provides a simple, modular, web-based solution to manage OPD workfl
 
 ✨ Features
 
-Patient Registration
+ - Patient Registration
 
-Unique patient records
+ - Unique patient records
 
-Visit-wise history
+ - Visit-wise history
 
-Visit Management
+ - Visit Management
 
-Doctor assignment
+ - Doctor assignment
 
-Visit status tracking
+ - Visit status tracking
 
-Payment Register
+ - Payment Register
 
-Consultation fee entry
+ - Consultation fee entry
 
-Date-wise records
+ - Date-wise records
 
-Medicine Dispensing
+ - Medicine Dispensing
 
-Prescription-based dispensing
+ - Prescription-based dispensing
 
-Basic stock handling
+ - Basic stock handling
 
-Analytics Dashboard
+ - Analytics Dashboard
 
-OPD count
+ - OPD count
 
-Revenue overview
+ - Revenue overview
 
 🛠️ Tech Stack
 
-Frontend: HTML, CSS
+ - Frontend: HTML, CSS
 
-Backend: Python (Flask)
+ - Backend: Python (Flask)
 
-Database: SQLite (local)
+ - Database: SQLite (local)
 
-Server: Localhost (development mode)
+ - Server: Localhost (development mode)
 
 📁 Project Structure
+
 aggarwal_clinic/
 │
 ├── app.py
@@ -69,11 +70,14 @@ aggarwal_clinic/
 └── README.md
 
 🚀 How to Run Locally
+
 1️⃣ Clone the repository
+
 git clone https://github.com/utkarsh-iit-mandi/opd-management-utkarsh.git
 cd opd-management-utkarsh
 
-2️⃣ Create virtual environment (recommended)
+2️⃣ Create a virtual environment (recommended)
+
 python3 -m venv venv
 source venv/bin/activate
 
@@ -94,11 +98,11 @@ Admin	admin	admin123
 
 ⚠️ Notes
 
-Database files and credentials are excluded from the repository for security reasons.
+ - Database files and credentials are excluded from the repository for security reasons.
 
-This project currently focuses on OPD-level management.
+ - This project currently focuses on OPD-level management.
 
-Not intended for production deployment in its current form.
+ - Not intended for production deployment in its current form.
 
 
 ## 📸 Screenshots
@@ -129,35 +133,35 @@ Not intended for production deployment in its current form.
 
 🔮 Future Enhancements
 
-Appointment scheduling system
+ - Appointment scheduling system
 
-Role-based access control
+ - Role-based access control
 
-SMS / Email notifications
+ - SMS / Email notifications
 
-Inventory alerts
+ - Inventory alerts
 
-AI-based clinical decision support (future scope)
+ - AI-based clinical decision support (future scope)
 
 🎓 Academic Relevance
 
 This project demonstrates:
 
-Full-stack web development
+ - Full-stack web development
 
-Real-world database design
+ - Real-world database design
 
-Practical system architecture
+ - Practical system architecture
 
-Healthcare workflow understanding
+ - Healthcare workflow understanding
 
-Suitable for courses in:
+ - Suitable for courses in:
 
-Software Engineering
+ - Software Engineering
 
-Database Systems
+ - Database Systems
 
-Web Development
+ - Web Development
 
 👤 Author
 
