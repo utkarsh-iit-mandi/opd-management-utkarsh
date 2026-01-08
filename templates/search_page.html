@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="card">
+    <h2>Search Patient</h2>
+    <p style="color:#555;">Naam / Mobile / Adsress-Village</p>
+
+    <form action="/smart_search" method="get">
+        <input
+            type="text"
+            name="query"
+            class="search-input"
+            placeholder="e.g. Ram / 9876543210 / Palwal"
+            autofocus
+            required
+        >
+
+        <button class="btn" style="margin-top:10px;">
+            🔍 Search
+        </button>
+    </form>
+</div>
+
+<a href="/" style="display:inline-block; margin-top:10px;">
+    ← Back to Home
+</a>
+
+{% endblock %}

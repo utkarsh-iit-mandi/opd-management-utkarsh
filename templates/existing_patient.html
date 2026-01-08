@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Already Exists</title>
+</head>
+<body>
+
+<h2>Patient Already Exists</h2>
+
+<p>
+<b>Name:</b> {{ patient[1] }} <br>
+<b>Age:</b> {{ patient[2] }} <br>
+<b>Gender:</b> {{ patient[3] }} <br>
+<b>Mobile:</b> {{ patient[4] }}
+</p>
+
+<hr>
+
+<a href="/add_visit/{{ patient[0] }}">➕ Add OPD Visit</a>
+<br><br>
+<a href="/history/{{ patient[0] }}">📜 View OPD History</a>
+<br><br>
+<a href="/">⬅ Back to Home</a>
+
+</body>
+</html>
+{% include "nav.html" %}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analytics</title>
+</head>
+<body>
+
+<h2>📊 Clinic Analytics</h2>
+
+<ul>
+    <li><b>Total Registered Patients:</b> {{ total_patients }}</li>
+    <li><b>Total OPD Visits:</b> {{ total_visits }}</li>
+    <li><b>Today's OPD:</b> {{ today_visits }}</li>
+    <li><b>This Month's OPD:</b> {{ month_visits }}</li>
+</ul>
+
+<hr>
+
+<a href="/analytics/village">🏘 Village-wise Report</a><br><br>
+<a href="/analytics/age">👶👴 Age-wise Report</a><br><br>
+<a href="/analytics/repeat">🔁 Repeat Patients</a>
+
+{% include "nav.html" %}
+
+</body>
+</html>

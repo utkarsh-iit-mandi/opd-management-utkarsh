@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px;">
+
+    <!-- LEFT SIDE -->
+    <div>
+
+        <!-- SEARCH -->
+        <div class="card">
+            <h2>🔍 Patient Search</h2>
+            <p style="color: #555;">Naam / Mobile / Address</p>
+
+            <form action="/smart_search" method="get">
+                <input
+                    type="text"
+                    name="query"
+                    placeholder="e.g. Ram / 9876543210 / Palwal"
+                    required
+                >
+                <button class="btn">Search</button>
+            </form>
+        </div>
+
+        <!-- ADD NEW PATIENT -->
+        <div class="card">
+    <h2>➕ Add New Patient</h2>
+
+    <form action="/add_patient" method="post">
+
+        <div style="display:grid; grid-template-columns: 3fr 120px; gap:15px;">
+
+            <div>
+                <label>Patient Name</label>
+                <input type="text" name="name" required>
+            </div>
+
+            <div>
+                <label>Age</label>
+                <input type="number" name="age" required>
+            </div>
+        </div>
+
+        <label class="field-label">Gender</label>
+
+<div class="gender-group">
+    <label class="gender-option">
+        <input type="radio" name="gender" value="M" required>
+        <span>Male</span>
+    </label>
+
+    <label class="gender-option">
+        <input type="radio" name="gender" value="F">
+        <span>Female</span>
+    </label>
+
+    <label class="gender-option">
+        <input type="radio" name="gender" value="O">
+        <span>Others</span>
+    </label>
+</div>
+
+
+
+
+
+        <label>Address / Village</label>
+        <input type="text" name="address" required>
+
+        <label>Mobile Number</label>
+        <input type="text" name="mobile" maxlength="10" required>
+
+        <button class="btn">Save Patient</button>
+    </form>
+</div>
+
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div>
+
+        <div class="card">
+            <h2>OPD Register</h2>
+            <p>See OPD History</p>
+            <a href="/today" class="btn">Today's OPD</a>
+        </div>
+<div class="card">
+            <h2>Payment Register</h2>
+            <p>Record of payment history</p>
+    <a href="/payment_register" class="btn">
+    Payment Register
+</a>
+
+</div>
+<div class="card">
+            <h2>Credit Register</h2>
+            <p>Record of all patients with credit history</p>
+    <a href="/credit_register" class="btn btn-warning">
+        Credit Register
+    </a>
+</div>
+<div class="card">
+            <h2>Patient Directory</h2>
+            <p>Record of all the patients</p>
+    <a href="/patient_directory" class="btn btn-warning">
+        Credit Register
+    </a>
+</div>
+<div class="card">
+            <h2>Medicine Dispensing Queue</h2>
+            <p>Page for compunder</p>
+    <a href="/compounder" class="btn btn-warning">
+        Medicine Dispensing
+    </a>
+</div>
+
+
+        <div class="card">
+            <h2>Reports</h2>
+            <p>Clinic summary & trends</p>
+            <a href="/analytics" class="btn">Open Analytics</a>
+        </div>
+
+        
+
+    </div>
+
+</div>
+
+{% endblock %}

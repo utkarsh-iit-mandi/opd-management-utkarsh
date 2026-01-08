@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>🔍 Search Results</h2>
+
+{% if patients|length == 0 %}
+    <div class="card">
+        <p>No patients found.</p>
+    </div>
+{% endif %}
+
+{% for p in patients %}
+<div class="card">
+
+    <h3 style="margin-bottom:5px;">
+        {{ p[1] }} ({{ p[2] }} yrs, {{ p[3] }})
+    </h3>
+
+    <p style="margin:4px 0;">
+         <b>Village:</b> {{ p[4] or "Not entered" }}
+    </p>
+
+    <p style="margin:4px 0;">
+         <b>Mobile:</b> {{ p[5] }}
+    </p>
+
+    <div style="margin-top:12px;">
+        <a href="/add_visit/{{ p[0] }}" class="btn">➕ Add OPD Visit</a>
+        <a href="/history/{{ p[0] }}" class="btn btn-secondary">📜 View History</a>
+    </div>
+
+</div>
+{% endfor %}
+
+<a href="/" style="display:inline-block; margin-top:10px;">← Back to Home</a>
+
+{% endblock %}

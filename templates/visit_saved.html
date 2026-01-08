@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="card" style="text-align:center; background:#eef6f0;">
+    <h2 style="color:#2e7d32;">✅ OPD Visit Saved</h2>
+    <p style="color:#555;">What would you like to do next?</p>
+</div>
+
+<div class="card" style="text-align:center;">
+    <a href="/add_visit/{{ patient_id }}" class="btn" style="margin:5px;">
+        ➕ Add Another OPD Visit
+    </a>
+
+    <a href="/history/{{ patient_id }}" class="btn btn-secondary" style="margin:5px;">
+        📜 View OPD History
+    </a>
+</div>
+
+<div class="card" style="text-align:center;">
+    <a href="/" class="btn">
+        🏠 Go to Home
+    </a>
+</div>
+
+{% endblock %}

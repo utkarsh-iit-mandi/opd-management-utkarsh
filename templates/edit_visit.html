@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Edit Last Entry</h2>
+
+    <form method="POST">
+        <label>Fee</label>
+        <input type="number" name="fee" value="{{ visit[5] }}" required>
+
+        <label>Paid</label>
+        <input type="number" name="paid" value="{{ visit[6] }}" required>
+
+        <label>Payment Mode</label>
+        <select name="payment_mode">
+            <option value="">—</option>
+            <option value="CASH" {% if visit[7]=='CASH' %}selected{% endif %}>Cash</option>
+            <option value="UPI" {% if visit[7]=='UPI' %}selected{% endif %}>UPI</option>
+        </select>
+
+        <label>Diagnosis</label>
+        <textarea name="diagnosis">{{ visit[3] }}</textarea>
+
+        <label>Advice</label>
+        <textarea name="advice">{{ visit[4] }}</textarea>
+
+        <label>Reason for Edit</label>
+        <input name="reason" required placeholder="Wrong amount entered">
+
+        <button class="btn">Save Changes</button>
+    </form>
+</div>
+
+<a href="javascript:history.back()">← Cancel</a>
+
+{% endblock %}

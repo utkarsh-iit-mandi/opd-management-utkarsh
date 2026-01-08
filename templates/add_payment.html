@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Record Payment</h2>
+
+    <p><b>Patient:</b> {{ patient[1] }}</p>
+    <p><b>Pending Balance:</b> ₹ {{ pending_credit }}</p>
+
+    <form method="post">
+        <label>Amount Paid (₹)</label>
+<input type="number" name="paid" min="1" required>
+
+<label>Payment Mode</label>
+<select name="payment_mode" required>
+    <option value="">-- Select --</option>
+    <option value="CASH">Cash</option>
+    <option value="UPI">UPI</option>
+</select>
+
+<label>Remark (optional)</label>
+<input type="text" name="remark" placeholder="Google Pay / PhonePe / Cash">
+
+
+        <button class="btn">Save Payment</button>
+    </form>
+</div>
+
+{% endblock %}

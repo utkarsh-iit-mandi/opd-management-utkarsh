@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>📘 Patient Directory</h2>
+    <p class="muted">
+        Total Patients: {{ total_patients }}
+    </p>
+</div>
+
+<div class="card">
+<div class="table-wrapper">
+<table class="opd-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Village / Address</th>
+            <th>Mobile</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for p in patients %}
+        <tr>
+            <td><span class="pid">P-{{ p[0] }}</span></td>
+            <td class="name">{{ p[1] }}</td>
+            <td>{{ p[2] }}</td>
+            <td>{{ p[3] }}</td>
+            <td class="address">{{ p[4] or "—" }}</td>
+            <td>{{ p[5] }}</td>
+            <td>
+                <a href="/history/{{ p[0] }}" class="btn-link">
+                    View History
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+
+<!-- ===== PAGINATION ===== -->
+<div class="pagination">
+
+    {% if page > 1 %}
+        <a href="/patient_directory?page={{ page - 1 }}" class="page-btn">← Prev</a>
+    {% endif %}
+
+    <span class="page-info">
+        Page {{ page }} of {{ total_pages }}
+    </span>
+
+    {% if page < total_pages %}
+        <a href="/patient_directory?page={{ page + 1 }}" class="page-btn">Next →</a>
+    {% endif %}
+
+</div>
+
+<a href="/" class="back-link">← Back to Home</a>
+
+{% endblock %}

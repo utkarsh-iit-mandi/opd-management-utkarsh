@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>📅 OPD Records</h2>
+
+<!-- SUMMARY -->
+<div class="card" style="background:#f8f9fa;">
+    <b>From:</b> {{ from_date }} &nbsp;&nbsp;
+    <b>To:</b> {{ to_date }} &nbsp;&nbsp;
+    <b>Total Patients:</b> {{ count }}
+</div>
+
+<!-- TABLE -->
+<div class="card" style="padding:0;">
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead style="background:#e8f5e9; position:sticky; top:0;">
+                <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Village</th>
+                    <th>Mobile</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {% for v in visits %}
+                <tr style="border-bottom:1px solid #eee;">
+                    <td>{{ v[1].split(' ')[0] }}</td>
+                    <td>{{ v[1].split(' ')[1] }}</td>
+                    <td><b>P-{{ v[2] }}</b></td>
+                    <td>{{ v[3] }}</td>
+                    <td>{{ v[4] }}</td>
+                    <td>{{ v[6] or "—" }}</td>
+                    <td>{{ v[7] }}</td>
+                    <td>
+                        <a href="/history/{{ v[2] }}" class="btn btn-sm">
+                            📂
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a href="/today" class="btn btn-secondary" style="margin-top:15px;">
+    ⬅ Back to Today
+</a>
+
+{% endblock %}

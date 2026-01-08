@@ -1,0 +1,258 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h2>Clinic Analytics</h2>
+
+<!-- ===== SUMMARY CARDS ===== -->
+<div class="card-grid">
+
+    <div class="stat-card">
+        <h3>{{ total_patients }}</h3>
+        <p>Total Patients</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>{{ total_visits }}</h3>
+        <p>Total OPD Visits</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>{{ today_opd }}</h3>
+        <p>Today's OPD</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>{{ month_opd }}</h3>
+        <p>This Month</p>
+    </div>
+
+</div>
+
+<h3 style="margin-top:30px;">Financial Overview</h3>
+
+<div class="card-grid">
+
+    <div class="stat-card">
+        <h3>₹ {{ total_fee }}</h3>
+        <p>Total Fee Billed</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 class="green">₹ {{ total_collected }}</h3>
+        <p>Total Collected</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 class="blue">₹ {{ cash_total }}</h3>
+        <p>Cash Collection</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 class="purple">₹ {{ upi_total }}</h3>
+        <p>UPI Collection</p>
+    </div>
+
+    <div class="stat-card">
+        <h3 class="red">₹ {{ total_pending }}</h3>
+        <p>Pending Balance</p>
+    </div>
+
+</div>
+<h3>Financial Overview — Today</h3>
+
+<div class="card-grid">
+    <div class="stat-card green">
+        <h3>₹ {{ cash_today }}</h3>
+        <p>Cash</p>
+    </div>
+
+    <div class="stat-card blue">
+        <h3>₹ {{ upi_today }}</h3>
+        <p>UPI</p>
+    </div>
+
+    <div class="stat-card dark">
+        <h3>₹ {{ total_collected_today }}</h3>
+        <p>Total Collected</p>
+    </div>
+
+</div>
+<h3 style="margin-top:30px;">Financial Overview — This Month</h3>
+
+<div class="card-grid">
+    <div class="stat-card green">
+        <h3>₹ {{ cash_month }}</h3>
+        <p>Cash</p>
+    </div>
+
+    <div class="stat-card blue">
+        <h3>₹ {{ upi_month }}</h3>
+        <p>UPI</p>
+    </div>
+
+    <div class="stat-card dark">
+        <h3>₹ {{ total_collected_month }}</h3>
+        <p>Total Collected</p>
+    </div>
+
+</div>
+
+
+
+<!-- ===== CHART SECTION ===== -->
+<div class="chart-grid">
+
+    <div class="card">
+        <h4> Village-wise Patients</h4>
+        <canvas id="villageChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h4>Age Group Distribution</h4>
+        <canvas id="ageChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h4>New vs Repeat Patients</h4>
+        <canvas id="repeatChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h4>OPD Trend (Last 7 Days)</h4>
+        <canvas id="trendChart"></canvas>
+    </div>
+    <div class="card">
+    <h4>Cash vs UPI</h4>
+    <canvas id="paymentChart"></canvas>
+</div>
+
+<div class="card">
+    <h4>Collection Trend (7 Days)</h4>
+    <canvas id="moneyTrendChart"></canvas>
+</div>
+
+
+</div>
+
+<!-- ===== SAFE DATA PASSING ===== -->
+<script id="analytics-data" type="application/json">
+{
+  "village_labels": {{ village_labels | tojson }},
+  "village_counts": {{ village_counts | tojson }},
+  "age_labels": {{ age_labels | tojson }},
+  "age_counts": {{ age_counts | tojson }},
+  "new_patients": {{ new_patients }},
+  "repeat_patients": {{ repeat_patients }},
+  "trend_labels": {{ trend_data | map(attribute=0) | list | tojson }},
+  "trend_counts": {{ trend_data | map(attribute=1) | list | tojson }},
+  "cash_total": {{ cash_total }},
+  "upi_total": {{ upi_total }},
+  "money_trend_labels": {{ money_trend | map(attribute=0) | list | tojson }},
+  "money_trend_values": {{ money_trend | map(attribute=1) | list | tojson }}
+}
+</script>
+
+<!-- ===== CHART JS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const raw = document.getElementById("analytics-data");
+    if (!raw) return;
+
+    const data = JSON.parse(raw.textContent);
+
+    const villageCtx = document.getElementById("villageChart");
+    if (villageCtx && data.village_labels.length) {
+        new Chart(villageCtx, {
+            type: "bar",
+            data: {
+                labels: data.village_labels,
+                datasets: [{
+                    label: "Patients",
+                    data: data.village_counts,
+                    backgroundColor: "#66bb6a"
+                }]
+            }
+        });
+    }
+
+    const ageCtx = document.getElementById("ageChart");
+    if (ageCtx && data.age_labels.length) {
+        new Chart(ageCtx, {
+            type: "pie",
+            data: {
+                labels: data.age_labels,
+                datasets: [{
+                    data: data.age_counts
+                }]
+            }
+        });
+    }
+
+    const repeatCtx = document.getElementById("repeatChart");
+    if (repeatCtx) {
+        new Chart(repeatCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["New Patients", "Repeat Patients"],
+                datasets: [{
+                    data: [data.new_patients, data.repeat_patients]
+                }]
+            }
+        });
+    }
+
+    const trendCtx = document.getElementById("trendChart");
+    if (trendCtx && data.trend_labels.length) {
+        new Chart(trendCtx, {
+            type: "line",
+            data: {
+                labels: data.trend_labels,
+                datasets: [{
+                    label: "OPD Visits",
+                    data: data.trend_counts,
+                    borderColor: "#2e7d32",
+                    fill: false
+                }]
+            }
+        });
+    }
+
+    const paymentCtx = document.getElementById("paymentChart");
+    if (paymentCtx) {
+        new Chart(paymentCtx, {
+            type: "pie",
+            data: {
+                labels: ["Cash", "UPI"],
+                datasets: [{
+                    data: [data.cash_total, data.upi_total],
+                    backgroundColor: ["#66bb6a", "#42a5f5"]
+                }]
+            }
+        });
+    }
+
+    const moneyTrendCtx = document.getElementById("moneyTrendChart");
+    if (moneyTrendCtx && data.money_trend_labels.length) {
+        new Chart(moneyTrendCtx, {
+            type: "line",
+            data: {
+                labels: data.money_trend_labels,
+                datasets: [{
+                    label: "Collection ₹",
+                    data: data.money_trend_values,
+                    borderColor: "#4caf50",
+                    fill: false
+                }]
+            }
+        });
+    }
+
+});
+</script>
+
+
+{% endblock %}

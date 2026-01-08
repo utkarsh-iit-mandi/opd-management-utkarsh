@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Village-wise Analytics</title>
+</head>
+<body>
+
+<h2>🏘 Gaon-wise Patient Report</h2>
+
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Gaon / Pata</th>
+        <th>Total Patients</th>
+    </tr>
+
+    {% for row in data %}
+    <tr>
+        <td>{{ row[0] }}</td>
+        <td>{{ row[1] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="/analytics">⬅ Back to Analytics</a>
+
+{% include "nav.html" %}
+
+</body>
+</html>

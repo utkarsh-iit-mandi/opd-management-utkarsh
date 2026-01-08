@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="card" style="background:#fff3cd; border-left:6px solid #ff9800;">
+    <h2 style="margin-top:0;">⚠️ Possible Duplicate Patient</h2>
+
+    <p class="muted">
+        A patient with the <b>same name</b> already exists under this mobile number.
+        Please confirm before proceeding.
+    </p>
+</div>
+
+<!-- EXISTING PATIENT DETAILS -->
+<div class="card">
+    <h3>📄 Existing Patient</h3>
+
+    <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:10px;">
+        <div><b>Patient ID:</b> P-{{ patient[0] }}</div>
+        <div><b>Name:</b> {{ patient[1] }}</div>
+        <div><b>Age:</b> {{ patient[2] }} yrs</div>
+        <div><b>Gender:</b> {{ patient[3] }}</div>
+    </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="card" style="display:flex; gap:15px; flex-wrap:wrap;">
+
+    <!-- SAME PATIENT -->
+    <form method="GET" action="/add_visit/{{ patient[0] }}">
+        <button class="btn">
+            ✅ This is the SAME patient
+        </button>
+    </form>
+
+    <!-- DIFFERENT PERSON -->
+    <form method="POST" action="/force_add_patient">
+        <input type="hidden" name="name" value="{{ name }}">
+        <input type="hidden" name="age" value="{{ age }}">
+        <input type="hidden" name="gender" value="{{ gender }}">
+        <input type="hidden" name="contact_id" value="{{ contact_id }}">
+
+        <button class="btn btn-secondary">
+            ➕ This is a DIFFERENT person
+        </button>
+    </form>
+
+</div>
+
+<a href="/" class="back-link">← Cancel and go back</a>
+
+{% endblock %}

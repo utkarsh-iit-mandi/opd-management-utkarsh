@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Results</title>
+</head>
+<body>
+
+<h2>Search Results for "{{ query }}"</h2>
+
+{% if patients %}
+    <ul>
+    {% for p in patients %}
+        <li>
+            <b>P-{{ p[0] }}</b> —
+            <b>{{ p[1] }}</b>
+            ({{ p[2] }} yrs, {{ p[3] }})<br>
+            Mobile: {{ p[4] }}<br>
+
+            <a href="/add_visit/{{ p[0] }}">➕ Add OPD Visit</a>
+            |
+            <a href="/history/{{ p[0] }}">📜 View History</a>
+        </li>
+
+        <br>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No patients found with this name.</p>
+{% endif %}
+
+<a href="/search_page">⬅ Back to Search</a>
+
+{% include "nav.html" %}
+
+</body>
+</html>

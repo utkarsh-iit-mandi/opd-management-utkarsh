@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aggarwal Clinic</title>
+</head>
+<body>
+
+<h2>Aggarwal Clinic OPD System</h2>
+
+<h3>Search Patient (Name / Mobile / Village)</h3>
+
+<form method="GET" action="/smart_search">
+    <input name="query" placeholder="Enter name or mobile number" style="width:300px;">
+    <button type="submit">Search</button>
+</form>
+
+
+<hr>
+
+<h3>Add New Patient</h3>
+
+<form method="POST" action="/add_patient">
+
+    Name:
+    <input
+        type="text"
+        name="name"
+        required
+        pattern="[A-Za-z ]+"
+        title="Only letters and spaces allowed">
+    <br><br>
+
+    Age:
+    <input
+        type="number"
+        name="age"
+        required
+        min="0"
+        max="120">
+    <br><br>
+
+    Gender:
+    <select name="gender" required>
+        <option value="">-- Select --</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+        <option value="O">Other</option>
+    </select>
+    <br><br>
+    Address / Village:
+<input
+    type="text"
+    name="address"
+    required
+    pattern="[A-Za-z0-9 ,.-]+"
+    title="Only letters, numbers, comma and dash allowed">
+<br><br>
+
+    Mobile Number:
+    <input
+        type="text"
+        name="mobile"
+        required
+        pattern="[0-9]{10}"
+        maxlength="10"
+        title="Enter 10 digit mobile number">
+    <br><br>
+
+    <button type="submit">Save Patient</button>
+
+</form>
+
+<hr>
+<a href="/today">📋 OPD Register</a>
+
+<br><br>
+<hr>
+<a href="/analytics">📊 Analytics / Reports</a>
+<br><br>
+
+
+
+</body>
+</html>
+{% include "nav.html" %}

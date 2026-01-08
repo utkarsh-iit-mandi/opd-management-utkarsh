@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!-- 🔔 PREVIOUS CREDIT ALERT -->
+
+
+<!-- PATIENT SUMMARY -->
+<div class="card" style="background:#eef6f0;">
+    <h2>OPD Visit</h2>
+
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-top:10px;">
+        <div><b>ID:</b> P-{{ patient[0] }}</div>
+        <div><b>Name:</b> {{ patient[1] }}</div>
+        <div><b>Age:</b> {{ patient[2] }}</div>
+        <div><b>Gender:</b> {{ patient[3] }}</div>
+    </div>
+</div>
+
+{% if pending_credit > 0 %}
+<div class="card" style="background:#fff3cd; border-left:6px solid #ff9800;">
+    <h3 style="margin:0;">⚠️ Pending Credit Alert</h3>
+    <p style="margin:8px 0 0;">
+        Previous unpaid amount:
+        <b style="color:#d84315;">₹ {{ pending_credit }}</b>
+    </p>
+</div>
+{% endif %}
+
+
+<!-- OPD FORM -->
+<div class="card">
+    <form action="/add_visit" method="post">
+
+        <input type="hidden" name="patient_id" value="{{ patient[0] }}">
+
+        <label>📝 Symptoms</label>
+        <textarea name="symptoms" rows="4" placeholder="e.g. Fever, cough, body pain" required></textarea>
+
+        <label>🩺 Diagnosis</label>
+        <textarea name="diagnosis" rows="3" placeholder="e.g. Viral fever" required></textarea>
+
+        <label>💊 Advice / Medicines</label>
+        <textarea name="advice" rows="4" placeholder="e.g. Paracetamol, rest, fluids" required></textarea>
+
+        <!-- PAYMENT SECTION -->
+       <!-- 💰 PAYMENT SECTION -->
+<div class="card" style="background:#f8f9fa; margin-top:15px;">
+    <h3 style="margin-top:0;">💰 Payment Details</h3>
+
+    <label>Total Fee (₹)</label>
+    <input
+        type="number"
+        name="fee"
+        id="fee"
+        class="compact-input"
+        min="0"
+        placeholder="e.g. 300"
+        required
+    >
+
+    <label>Paid Amount (₹)</label>
+    <input
+        type="number"
+        name="paid"
+        id="paid"
+        class="compact-input"
+        min="0"
+        value="0"
+        required
+    >
+
+    <div style="font-size:13px; color:#666; margin-top:5px;">
+        💡 Paid amount auto-fills same as fee (change only if partial payment).
+    </div>
+
+    <!-- ✅ CHECKBOX STYLE -->
+   <label class="section-label">Payment Mode</label>
+
+<div class="payment-modes">
+    <label>
+        <input type="radio" name="payment_mode" value="CASH" required>
+        <span>Cash</span>
+    </label>
+
+    <label>
+        <input type="radio" name="payment_mode" value="UPI">
+        <span>UPI</span>
+    </label>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+
+        <button class="btn" style="margin-top:15px;">💾 Save OPD Visit</button>
+    </form>
+</div>
+
+<a href="/history/{{ patient[0] }}" style="display:inline-block; margin-top:10px;">
+    ← Back to Patient History
+</a>
+
+{% endblock %}
+<script>
+const feeInput = document.getElementById("fee");
+const paidInput = document.getElementById("paid");
+const paymentModes = document.querySelectorAll('input[name="payment_mode"]');
+
+function syncPaidWithFee() {
+    paidInput.value = feeInput.value || 0;
+    togglePaymentMode();
+}
+
+function togglePaymentMode() {
+    const paid = parseInt(paidInput.value || 0);
+    paymentModes.forEach(radio => {
+        radio.disabled = (paid === 0);
+        if (paid === 0) radio.checked = false;
+    });
+}
+
+feeInput.addEventListener("input", syncPaidWithFee);
+paidInput.addEventListener("input", togglePaymentMode);
+
+// Init
+togglePaymentMode();
+</script>
+
+<script>
+const padInput = document.querySelector('input[name="paid"]');
+const modeSelect = document.querySelector('select[name="payment_mode"]');
+
+function toggleMode() {
+    if (parseInt(padInput.value || 0) === 0) {
+        modeSelect.value = "";
+        modeSelect.disabled = true;
+    } else {
+        modeSelect.disabled = false;
+    }
+}
+
+padInput.addEventListener("input", toggleMode);
+toggleMode();
+</script>

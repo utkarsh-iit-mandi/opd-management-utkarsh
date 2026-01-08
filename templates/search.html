@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Patient Found</title>
+</head>
+<body>
+
+<h2>Patient Details</h2>
+
+<p><b>Name:</b> {{ patient[1] }}</p>
+<p><b>Age:</b> {{ patient[2] }}</p>
+<p><b>Gender:</b> {{ patient[3] }}</p>
+<p><b>Mobile:</b> {{ patient[4] }}</p>
+
+<hr>
+
+<p>Patient ID: {{ patient[0] }}</p>
+
+</body>
+</html>
+<hr>
+<a href="/add_visit/{{ patient[0] }}">Add OPD Visit</a>
+<br><br>
+<a href="/history/{{ patient[0] }}">View OPD History</a>
+{% include "nav.html" %}

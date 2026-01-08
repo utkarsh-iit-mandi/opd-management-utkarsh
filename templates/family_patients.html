@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Family Members</title>
+</head>
+<body>
+
+<h2>Patients linked to {{ mobile }}</h2>
+
+{% if patients %}
+    <ul>
+    {% for p in patients %}
+        <li>
+            <b>P-{{ p[0] }}</b> —
+            <b>{{ p[1] }}</b>
+            ({{ p[2] }} yrs, {{ p[3] }})<br>
+            <b>Address:</b> {{ p[4] }}<br>
+            <a href="/add_visit/{{ p[0] }}">➕ Add OPD Visit</a>
+            |
+            <a href="/history/{{ p[0] }}">📜 View History</a>
+        </li>
+
+        <br>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No patients found.</p>
+{% endif %}
+
+<hr>
+
+<h3>Add New Family Member</h3>
+<form method="POST" action="/add_family_member">
+    <input type="hidden" name="mobile" value="{{ mobile }}">
+
+    Name:
+    <input
+        type="text"
+        name="name"
+        required
+        pattern="[A-Za-z ]+">
+    <br><br>
+
+    Age:
+    <input
+        type="number"
+        name="age"
+        required
+        min="0"
+        max="120">
+    <br><br>
+
+    Gender:
+    <select name="gender" required>
+        <option value="">-- Select --</option>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+        <option value="O">Other</option>
+    </select>
+    <br><br>
+
+    <button type="submit">Add Patient</button>
+</form>
+Address / Village:
+<input
+    type="text"
+    name="address"
+    required
+    pattern="[A-Za-z0-9 ,.-]+">
+<br><br>
+
+
+<br>
+<a href="/">⬅ Back to Home</a>
+
+</body>
+</html>
+{% include "nav.html" %}

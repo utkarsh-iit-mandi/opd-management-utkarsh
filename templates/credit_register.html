@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>🧾 Credit Register</h2>
+<p style="color:#666;">Patients with pending Balance</p>
+
+<div class="card">
+    <strong>Total Patients with Credit Balance:</strong> {{ count }}
+</div>
+
+<div class="card">
+<table style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr style="background:#f8f9fa;">
+            <th>Patient</th>
+            <th>Mobile</th>
+            <th>Total Fee</th>
+            <th>Paid</th>
+            <th>Pending</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for r in rows %}
+        <tr>
+            <td>
+                <strong>{{ r[1] }}</strong><br>
+                <small>{{ r[5] }}</small>
+            </td>
+            <td>{{ r[4] }}</td>
+            <td>₹ {{ r[6] }}</td>
+            <td>₹ {{ r[7] }}</td>
+            <td class="credit">₹ {{ r[8] }}</td>
+            <td>
+                <a href="/history/{{ r[0] }}" class="btn btn-sm">View</a>
+                <a href="/add_payment/{{ r[0] }}" class="btn btn-secondary btn-sm">Pay</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<a href="/" style="display:inline-block; margin-top:15px;">
+    ← Back to Home
+</a>
+
+{% endblock %}

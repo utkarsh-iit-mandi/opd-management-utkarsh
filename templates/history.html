@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!-- ================= PATIENT SUMMARY ================= -->
+<div class="card" style="background:#e8f5e9;">
+    <h2> {{ patient[1] | upper }}</h2>
+
+    <div class="muted">
+        <b>Age:</b> {{ patient[2] }} yrs |
+        <b>Gender:</b> {{ patient[3] }} |
+        <b>Mobile:</b> {{ patient[5] }} |
+        <b>Address:</b> {{ patient[4] or "—" }}
+    </div>
+    <hr>
+    <div style="margin-top:12px;">
+        <a href="/add_visit/{{ patient[0] }}" class="btn">➕ Add OPD</a>
+        <a href="/add_payment/{{ patient[0] }}" class="btn btn-secondary">💰 Add Payment</a>
+    </div>
+</div>
+
+<!-- ================= TOTAL PENDING ================= -->
+<div class="card" style="background:#fff3e0;">
+    <strong>💰 Total Pending Balnce:</strong>
+    <span class="{% if total_udhaar > 0 %}credit{% else %}paid{% endif %}">
+        ₹ {{ total_udhaar }}
+    </span>
+</div>
+
+<!-- ================= PAYMENT / OPD HISTORY ================= -->
+<div class="card">
+    <h3> Payment / OPD History</h3>
+
+    <table class="opd-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Fee</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Mode</th>
+                <th>Details</th>
+                {% if session.role in ["ADMIN", "DOCTOR"] %}
+                    <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for v in visits %}
+            <tr class="{% if v.is_void %}voided{% endif %}">
+                <td>{{ v.date }}</td>
+                <td>₹ {{ v.fee }}</td>
+                <td>₹ {{ v.paid }}</td>
+
+                <td class="{% if v.credit > 0 %}credit{% elif v.credit < 0 %}paid{% else %}neutral{% endif %}">
+                    ₹ {{ v.credit }}
+                </td>
+
+                <td>
+                    {% if v.payment_mode == "CASH" %}
+                        Cash
+                    {% elif v.payment_mode == "UPI" %}
+                        UPI
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+
+                <td>{{ v.diagnosis }}</td>
+
+                <td>
+  <a href="/edit_visit/{{ v.id }}" class="btn btn-sm btn-primary">
+    Edit
+  </a>
+</td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ================= OPD VISIT DETAILS ================= -->
+<h3 style="margin-top:25px;">🩺 OPD Visit Details</h3>
+
+{% for v in visits %}
+<div class="card {% if v.is_void %}voided{% endif %}">
+    <div class="muted">📅 {{ v.date }}</div>
+    <hr>
+    <p><b>📝 Symptoms:</b><br>{{ v.symptoms }}</p>
+    <p><b>🩺 Diagnosis:</b><br>{{ v.diagnosis }}</p>
+    <p><b>💊 Advice:</b><br>{{ v.advice }}</p>
+</div>
+{% endfor %}
+
+<a href="/" class="back-link">← Back to Home</a>
+
+{% endblock %}
