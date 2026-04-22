@@ -10,18 +10,22 @@
         <!-- SEARCH -->
         <div class="card">
             <h2>🔍 Patient Search</h2>
-            <p class="muted" style="margin-bottom: 14px;">Search by name, mobile number, or village</p>
+            <p class="muted" style="margin-bottom: 14px;">Search by name, mobile number, or address</p>
 
-            <form action="/smart_search" method="get">
-                <input
-                    type="text"
-                    name="query"
-                    placeholder="e.g. Ram / 9876543210 / Palwal"
-                    required
-                    style="margin-bottom: 14px;"
-                >
-                <button class="btn" style="width: 100%;">🔍 Search Patient</button>
-            </form>
+            <input
+    type="text"
+    id="patient-search"
+    placeholder="e.g. Ram / 9876543210 / Delhi"
+    style="margin-bottom: 14px;"
+>
+
+<div id="search-results" style="
+    border:1px solid #eee;
+    border-radius:8px;
+    max-height:250px;
+    overflow-y:auto;
+"></div>
+           
         </div>
 
         <!-- ADD NEW PATIENT -->
@@ -57,7 +61,7 @@
                     </label>
                 </div>
 
-                <label style="margin-top: 18px;">Address / Village</label>
+                <label style="margin-top: 18px;">Address</label>
                 <input type="text" name="address" required>
 
                 <label style="margin-top: 18px;">Mobile Number</label>
@@ -123,5 +127,66 @@
     </div>
 
 </div>
+<script>
+    // paste the AJAX JS here
+    const searchInput = document.getElementById("patient-search");
+const resultsBox = document.getElementById("search-results");
+
+let debounceSearch;
+
+searchInput.addEventListener("input", () => {
+    clearTimeout(debounceSearch);
+
+    const q = searchInput.value.trim();
+
+    if (q.length < 2) {
+        resultsBox.innerHTML = "";
+        return;
+    }
+
+    debounceSearch = setTimeout(() => {
+        fetch(`/api/search_patient?q=${encodeURIComponent(q)}`)
+            .then(res => res.json())
+            .then(data => {
+
+                if (!data.length) {
+                    resultsBox.innerHTML = `<div style="padding:10px;color:#888;">No results</div>`;
+                    return;
+                }
+
+                resultsBox.innerHTML = data.map(p => `
+    <div onclick="goToPatient(${p.id})"
+        style="
+            padding:12px;
+            border-bottom:1px solid #eee;
+            cursor:pointer;
+        ">
+        
+        <div style="font-weight:600;">
+            ${p.name} (${p.age}, ${p.gender})
+        </div>
+
+        <div style="font-size:13px; color:#555;">
+            ${p.mobile}
+        </div>
+
+        <div style="font-size:12px; color:#777;">
+            ${p.address || "No address"}
+        </div>
+
+        <div style="font-size:12px; color:#999;">
+            ${p.last_visit}
+        </div>
+
+    </div>
+`).join("");
+            });
+    }, 300);
+});
+
+function goToPatient(id) {
+    window.location.href = `/history/${id}`;
+}
+</script>
 
 {% endblock %}

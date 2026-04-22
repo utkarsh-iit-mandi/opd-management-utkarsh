@@ -1,0 +1,405 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!-- PATIENT SUMMARY -->
+<div class="card" style="background:#eef6f0;">
+    <h2>OPD Visit</h2>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:15px; margin-top:10px;">
+        <div><b>ID:</b> P-{{ patient[0] }}</div>
+        <div><b>Name:</b> {{ patient[1] }}</div>
+        <div><b>Age:</b> {{ patient[2] }}</div>
+        <div><b>Gender:</b> {{ patient[3] }}</div>
+    </div>
+</div>
+
+{% if pending_credit > 0 %}
+<div class="card" style="background:#fff3cd; border-left:6px solid #ff9800;">
+    <h3 style="margin:0;">⚠️ Pending Credit Alert</h3>
+    <p style="margin:8px 0 0;">Previous unpaid amount: <b style="color:#d84315;">₹ {{ pending_credit }}</b></p>
+</div>
+{% endif %}
+
+<div class="card">
+    <form action="/add_visit" method="post" id="opd-form">
+
+        <input type="hidden" name="patient_id" value="{{ patient[0] }}">
+
+        <label>📝 Symptoms</label>
+        <textarea name="symptoms" rows="3" placeholder="e.g. Fever, cough, body pain" required></textarea>
+
+        <label style="margin-top:18px;">🩺 Diagnosis</label>
+        <textarea name="diagnosis" rows="3" placeholder="e.g. Viral fever" required></textarea>
+
+
+        <!-- ══════════════════════════════════════════
+             MEDICINE PRESCRIPTION BUILDER
+        ══════════════════════════════════════════ -->
+        <label style="margin-top:22px;">💊 Medicines</label>
+        <p style="font-size:12px; color:#888; margin:4px 0 10px;">Type to search from 2.5 lakh medicines</p>
+
+        <!-- Search box -->
+        <div style="position:relative;" id="med-search-wrap">
+            <input
+                type="text"
+                id="med-search"
+                placeholder="e.g. Paracetamol, Augmentin, Azithral…"
+                autocomplete="off"
+                style="padding-right:40px;"
+            >
+            <span id="search-spinner" style="
+                display:none;
+                position:absolute; right:13px; top:50%; transform:translateY(-50%);
+                font-size:14px;
+            ">⏳</span>
+            <span id="search-icon" style="
+                position:absolute; right:13px; top:50%; transform:translateY(-50%);
+                color:#aaa; font-size:15px; pointer-events:none;
+            ">🔍</span>
+
+            <!-- Dropdown -->
+            <div id="med-dropdown" style="
+                display:none;
+                position:absolute;
+                top:calc(100% + 5px); left:0; right:0;
+                background:#fff;
+                border:1.5px solid #a5d6a7;
+                border-radius:12px;
+                box-shadow:0 10px 32px rgba(26,58,42,0.15);
+                z-index:9999;
+                overflow:hidden;
+                max-height:300px;
+                overflow-y:auto;
+            "></div>
+        </div>
+
+        <!-- API not configured warning (hidden by default, shown by JS if API fails) -->
+        <div id="api-warning" style="
+            display:none;
+            margin-top:8px;
+            padding:10px 14px;
+            background:#fff3cd;
+            border-left:4px solid #ff9800;
+            border-radius:8px;
+            font-size:13px;
+            color:#555;
+        ">
+            ⚠️ Medicine API not responding. Make sure you've added
+            <code>from medicines_api import medicines_bp; app.register_blueprint(medicines_bp)</code>
+            to <b>app.py</b> and run <code>python medicines_api.py</code> once.
+        </div>
+
+        <!-- Frequency / Duration panel -->
+        <div id="med-options" style="
+            display:none;
+            background:#f5fbf6;
+            border:1.5px solid #a5d6a7;
+            border-radius:12px;
+            padding:18px 20px;
+            margin-top:10px;
+        ">
+            <div style="margin-bottom:14px;">
+                <span style="font-weight:700; font-size:14px; color:#1a3a2a;" id="sel-name"></span>
+                <span style="font-size:12px; color:#7a9a82; margin-left:8px;" id="sel-comp"></span>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="margin:0 0 5px; font-size:11px;">Frequency *</label>
+                    <select id="med-freq">
+                        <option value="">— Select —</option>
+                        <option value="Once daily (OD)">Once daily (OD)</option>
+                        <option value="Twice daily (BD)">Twice daily (BD)</option>
+                        <option value="Thrice daily (TDS)">Thrice daily (TDS)</option>
+                        <option value="Four times daily (QID)">Four times daily (QID)</option>
+                        <option value="At bedtime (HS)">At bedtime (HS)</option>
+                        <option value="As needed (SOS)">As needed (SOS)</option>
+                        <option value="Stat (single dose)">Stat (single dose)</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="margin:0 0 5px; font-size:11px;">Duration</label>
+                    <select id="med-duration">
+                        <option value="">— Select —</option>
+                        <option value="1 day">1 day</option>
+                        <option value="3 days">3 days</option>
+                        <option value="5 days">5 days</option>
+                        <option value="7 days">7 days</option>
+                        <option value="10 days">10 days</option>
+                        <option value="14 days">14 days</option>
+                        <option value="1 month">1 month</option>
+                        <option value="Until finished">Until finished</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="margin:0 0 5px; font-size:11px;">Timing</label>
+                    <select id="med-timing">
+                        <option value="">— Select —</option>
+                        <option value="After food">After food</option>
+                        <option value="Before food">Before food</option>
+                        <option value="With food">With food</option>
+                        <option value="Empty stomach">Empty stomach</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="margin:0 0 5px; font-size:11px;">Special Instructions (optional)</label>
+                <input type="text" id="med-note" placeholder="e.g. Do not crush, take with water" style="margin:0;">
+            </div>
+
+            <button type="button" onclick="addMedicine()" class="btn" style="width:100%;">
+                ➕ Add to Prescription
+            </button>
+        </div>
+
+        <!-- Prescription pills list -->
+        <div id="prescription-box" style="display:none; margin-top:14px;">
+            <div style="font-size:11px; font-weight:700; color:#2e7d32; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px;">
+                📋 Prescription
+            </div>
+            <div id="med-pills" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
+        <!-- Hidden field submitted with form -->
+        <input type="hidden" name="advice" id="advice-hidden">
+
+        <!-- Free-text notes -->
+        <div style="margin-top:14px;">
+            <label style="margin-bottom:6px;">📝 Additional Advice / Notes</label>
+            <textarea
+                id="extra-advice"
+                rows="2"
+                placeholder="e.g. Rest, plenty of fluids, review after 3 days"
+            ></textarea>
+        </div>
+
+
+        <!-- PAYMENT -->
+        <div class="card" style="background:#f8f9fa; margin-top:20px;">
+            <h3 style="margin-top:0;">💰 Payment Details</h3>
+
+            <label>Total Fee (₹)</label>
+            <input type="number" name="fee" id="fee" min="0" placeholder="e.g. 300" required>
+
+            <label style="margin-top:14px;">Paid Amount (₹)</label>
+            <input type="number" name="paid" id="paid" min="0" value="0" required>
+            <div style="font-size:12px; color:#888; margin-top:4px;">
+                💡 Auto-fills with fee. Change only if partial payment.
+            </div>
+
+            <label class="section-label" style="margin-top:14px;">Payment Mode</label>
+            <div class="payment-modes">
+                <label><input type="radio" name="payment_mode" value="CASH" required><span>Cash</span></label>
+                <label><input type="radio" name="payment_mode" value="UPI"><span>UPI</span></label>
+            </div>
+        </div>
+
+        <button class="btn" style="margin-top:18px; width:100%; font-size:16px; padding:14px;">
+            💾 Save OPD Visit
+        </button>
+    </form>
+</div>
+
+<a href="/history/{{ patient[0] }}" class="back-link">← Back to Patient History</a>
+
+<script>
+// ─── State ────────────────────────────────────────────
+let selectedMed   = null;
+let prescriptions = [];
+let apiWarned     = false;
+
+// ─── DOM refs ────────────────────────────────────────
+const searchInput   = document.getElementById("med-search");
+const dropdown      = document.getElementById("med-dropdown");
+const medOptions    = document.getElementById("med-options");
+const spinner       = document.getElementById("search-spinner");
+const searchIcon    = document.getElementById("search-icon");
+
+// ─── Autocomplete ─────────────────────────────────────
+let debounce;
+searchInput.addEventListener("input", () => {
+    clearTimeout(debounce);
+    const q = searchInput.value.trim();
+
+    if (q.length < 2) {
+        dropdown.style.display = "none";
+        return;
+    }
+
+    spinner.style.display = "block";
+    searchIcon.style.display = "none";
+
+    debounce = setTimeout(() => {
+        fetch(`/api/medicines?q=${encodeURIComponent(q)}`)
+            .then(r => {
+                if (!r.ok) throw new Error("API error " + r.status);
+                return r.json();
+            })
+            .then(data => {
+                spinner.style.display = "none";
+                searchIcon.style.display = "block";
+                renderDropdown(data, q);
+            })
+            .catch(err => {
+                spinner.style.display = "none";
+                searchIcon.style.display = "block";
+                dropdown.style.display = "none";
+                if (!apiWarned) {
+                    apiWarned = true;
+                    document.getElementById("api-warning").style.display = "block";
+                }
+                console.error("Medicine API error:", err);
+            });
+    }, 220);
+});
+
+function renderDropdown(results, query) {
+    if (!results.length) {
+        dropdown.innerHTML = `<div style="padding:14px 16px; color:#aaa; font-size:13px;">No medicines found for "${query}"</div>`;
+        dropdown.style.display = "block";
+        return;
+    }
+
+    dropdown.innerHTML = results.map(m => `
+        <div
+            class="med-row"
+            style="padding:12px 16px; cursor:pointer; border-bottom:1px solid #f0f4f1; transition:background 0.1s;"
+            onmouseenter="this.style.background='#f0faf2'"
+            onmouseleave="this.style.background=''"
+            onclick='selectMedicine(${JSON.stringify(m)})'
+        >
+            <div style="font-weight:600; font-size:14px; color:#1a3a2a;">${highlight(m.name, query)}</div>
+            ${m.composition ? `<div style="font-size:11.5px; color:#7a9a82; margin-top:2px;">${m.composition}</div>` : ''}
+        </div>
+    `).join("");
+    dropdown.style.display = "block";
+}
+
+function highlight(text, q) {
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, "gi");
+    return text.replace(re, `<mark style="background:#d4edda;color:#1a5c2a;border-radius:3px;padding:0 2px;">$1</mark>`);
+}
+
+document.addEventListener("click", e => {
+    if (!document.getElementById("med-search-wrap").contains(e.target))
+        dropdown.style.display = "none";
+});
+
+// ─── Select medicine → show options panel ────────────
+function selectMedicine(med) {
+    selectedMed = med;
+    dropdown.style.display = "none";
+    searchInput.value = med.name;
+
+    document.getElementById("sel-name").textContent = med.name;
+    document.getElementById("sel-comp").textContent = med.composition || "";
+
+    // Reset
+    ["med-freq","med-duration","med-timing"].forEach(id => {
+        document.getElementById(id).selectedIndex = 0;
+    });
+    document.getElementById("med-note").value = "";
+
+    medOptions.style.display = "block";
+    document.getElementById("med-freq").focus();
+}
+
+// ─── Add to prescription list ────────────────────────
+function addMedicine() {
+    if (!selectedMed) return;
+
+    const freq     = document.getElementById("med-freq").value;
+    const duration = document.getElementById("med-duration").value;
+    const timing   = document.getElementById("med-timing").value;
+    const note     = document.getElementById("med-note").value.trim();
+
+    if (!freq) {
+        document.getElementById("med-freq").style.borderColor = "#e53935";
+        alert("Please select a frequency.");
+        return;
+    }
+
+    prescriptions.push({ name: selectedMed.name, freq, duration, timing, note });
+    renderPills();
+    syncAdviceField();
+
+    // Reset UI
+    selectedMed = null;
+    searchInput.value = "";
+    medOptions.style.display = "none";
+}
+
+// ─── Render green pill tags ───────────────────────────
+function renderPills() {
+    const box   = document.getElementById("prescription-box");
+    const pills = document.getElementById("med-pills");
+
+    if (!prescriptions.length) { box.style.display = "none"; return; }
+    box.style.display = "block";
+
+    pills.innerHTML = prescriptions.map((rx, i) => {
+        const detail = [rx.freq, rx.duration, rx.timing].filter(Boolean).join("  ·  ");
+        return `
+            <div style="
+                display:flex; align-items:flex-start; justify-content:space-between;
+                background:linear-gradient(135deg,#e8f5e9,#f2fbf4);
+                border:1.5px solid #a5d6a7;
+                border-radius:10px;
+                padding:11px 14px;
+            ">
+                <div>
+                    <div style="font-weight:700; color:#1a3a2a; font-size:14px;">${rx.name}</div>
+                    <div style="color:#2e7d32; font-size:12.5px; margin-top:3px;">${detail}</div>
+                    ${rx.note ? `<div style="color:#7a9a82; font-size:12px; margin-top:2px; font-style:italic;">${rx.note}</div>` : ''}
+                </div>
+                <button
+                    type="button"
+                    onclick="removeMed(${i})"
+                    style="background:none;border:none;color:#bbb;font-size:18px;cursor:pointer;padding:0 0 0 10px;line-height:1;"
+                    title="Remove"
+                >✕</button>
+            </div>
+        `;
+    }).join("");
+}
+
+function removeMed(i) {
+    prescriptions.splice(i, 1);
+    renderPills();
+    syncAdviceField();
+}
+
+// ─── Sync hidden advice field before submit ───────────
+function syncAdviceField() {
+    const lines = prescriptions.map(rx => {
+        const parts = [rx.freq, rx.duration, rx.timing].filter(Boolean).join(", ");
+        return `${rx.name} — ${parts}${rx.note ? ' (' + rx.note + ')' : ''}`;
+    });
+    const extra = document.getElementById("extra-advice").value.trim();
+    if (extra) lines.push(extra);
+    document.getElementById("advice-hidden").value = lines.join("\n") || "—";
+}
+
+document.getElementById("opd-form").addEventListener("submit", syncAdviceField);
+document.getElementById("extra-advice").addEventListener("input", syncAdviceField);
+
+// ─── Fee → Paid sync ─────────────────────────────────
+const feeInput    = document.getElementById("fee");
+const paidInput   = document.getElementById("paid");
+const radioModes  = document.querySelectorAll('input[name="payment_mode"]');
+
+feeInput.addEventListener("input", () => {
+    paidInput.value = feeInput.value || 0;
+    toggleMode();
+});
+paidInput.addEventListener("input", toggleMode);
+
+function toggleMode() {
+    const paid = parseInt(paidInput.value || 0);
+    radioModes.forEach(r => { r.disabled = paid === 0; if (paid === 0) r.checked = false; });
+}
+toggleMode();
+</script>
+
+{% endblock %}

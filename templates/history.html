@@ -13,14 +13,14 @@
     </div>
     <hr>
     <div style="margin-top:12px;">
-        <a href="/add_visit/{{ patient[0] }}" class="btn">➕ Add OPD</a>
-        <a href="/add_payment/{{ patient[0] }}" class="btn btn-secondary">💰 Add Payment</a>
+        <a href="/add_visit/{{ patient[0] }}" class="btn"> Add OPD</a>
+        <a href="/add_payment/{{ patient[0] }}" class="btn btn-secondary">Add Payment</a>
     </div>
 </div>
 
 <!-- ================= TOTAL PENDING ================= -->
 <div class="card" style="background:#fff3e0;">
-    <strong>💰 Total Pending Balnce:</strong>
+    <strong> Total Pending Balnce:</strong>
     <span class="{% if total_udhaar > 0 %}credit{% else %}paid{% endif %}">
         ₹ {{ total_udhaar }}
     </span>
@@ -68,10 +68,21 @@
 
                 <td>{{ v.diagnosis }}</td>
 
-                <td>
-  <a href="/edit_visit/{{ v.id }}" class="btn btn-sm btn-primary">
-    Edit
+               <td style="display:flex; gap:6px; justify-content:center;">
+  
+  {% if not v.is_payment %}
+<a href="/prescription/{{ v.id }}" 
+   class="btn btn-sm" 
+   target="_blank">
+   🖨️
+</a>
+{% endif %}
+
+  <a href="/edit_visit/{{ v.id }}" 
+     class="btn btn-sm btn-primary">
+     Edit
   </a>
+
 </td>
 
             </tr>
@@ -81,15 +92,15 @@
 </div>
 
 <!-- ================= OPD VISIT DETAILS ================= -->
-<h3 style="margin-top:25px;">🩺 OPD Visit Details</h3>
+<h3 style="margin-top:25px;">OPD Visit Details</h3>
 
 {% for v in visits %}
 <div class="card {% if v.is_void %}voided{% endif %}">
-    <div class="muted">📅 {{ v.date }}</div>
+    <div class="muted">{{ v.date }}</div>
     <hr>
-    <p><b>📝 Symptoms:</b><br>{{ v.symptoms }}</p>
-    <p><b>🩺 Diagnosis:</b><br>{{ v.diagnosis }}</p>
-    <p><b>💊 Advice:</b><br>{{ v.advice }}</p>
+    <p><b>Symptoms:</b><br>{{ v.symptoms }}</p>
+    <p><b>Diagnosis:</b><br>{{ v.diagnosis }}</p>
+    <p><b>Advice:</b><br>{{ v.advice }}</p>
 </div>
 {% endfor %}
 

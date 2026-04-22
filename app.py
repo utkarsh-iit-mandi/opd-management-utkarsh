@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import sqlite3
 import re
 import hashlib
@@ -8,6 +8,7 @@ from datetime import datetime
 from functools import wraps
 from datetime import datetime
 import pytz
+
 def format_ist_time(ts):
     """
     Converts DB timestamp to IST & Indian readable format
@@ -43,9 +44,17 @@ from datetime import timedelta
 
 app.permanent_session_lifetime = timedelta(minutes=30)
 
+from symptoms_api import symptoms_bp, save_symptoms
+app.register_blueprint(symptoms_bp)
+from medicines_api import medicines_bp
+app.register_blueprint(medicines_bp)
 
+from prescription import prescription_bp
+app.register_blueprint(prescription_bp)
 def get_db():
     return sqlite3.connect("database.db")
+
+
 
 def login_required(f):
     @wraps(f)
@@ -255,7 +264,8 @@ def login():
 
 from functools import wraps
 
-
+from prescription_ai import prescription_bp, save_prescription
+app.register_blueprint(prescription_bp)
 
 def is_valid_mobile(mobile):
     return re.fullmatch(r"\d{10}", mobile)
@@ -377,7 +387,8 @@ def add_visit_page(patient_id):
 # Never show negative pending
     pending_credit = max(pending_credit, 0)
 
-
+    # Extract medicine names only
+    
 
     conn.close()
 
@@ -437,13 +448,25 @@ def save_visit():
         credit,
         payment_mode
     ))
+    # ✅ SAVE SYMPTOMS TO MONGODB
+    save_symptoms(data["symptoms"])
+    visit_id = cursor.lastrowid
 
     conn.commit()
     conn.close()
+    # Extract medicine names only
+    med_names = []
+
+    for line in data["advice"].split("\n"):
+        if "—" in line:
+            med_names.append(line.split("—")[0].strip())
+
+    save_prescription(data["symptoms"], med_names)
 
     return render_template(
         "visit_saved.html",
-        patient_id=patient_id
+        patient_id=patient_id,
+        visit_id=visit_id
     )
 
 @app.route("/edit_visit/<int:visit_id>", methods=["GET", "POST"])
@@ -608,32 +631,41 @@ def add_payment(patient_id):
         remark = request.form.get("remark", "Payment received")
         payment_mode = request.form["payment_mode"]
 
-        cursor.execute("""
-            INSERT INTO visits
-            (patient_id, symptoms, diagnosis, advice, fee, paid, credit, payment_mode)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            patient_id,
-            "PAYMENT",
-            "PAYMENT ONLY",
-            remark,
-            0,
-            paid,
-            -paid,          # 👈 reduces udhaar
-            payment_mode
-        ))
+        try:
+        # 🔥 Start transaction
+            conn.execute("BEGIN")
 
-        conn.commit()
-        conn.close()
+        # 💾 Insert payment
+            conn.execute("""
+                INSERT INTO visits
+                (patient_id, symptoms, diagnosis, advice, fee, paid, credit, payment_mode)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                patient_id,
+                "PAYMENT",
+                "PAYMENT ONLY",
+                remark,
+                0,
+                paid,
+                -paid,
+                payment_mode
+            ))
+
+        # ✅ Commit if everything is fine
+            conn.commit()
+
+        except Exception as e:
+        # ❌ Rollback if anything fails
+            conn.rollback()
+            print("Transaction failed:", e)
+
+            return "Payment failed. Nothing saved.", 500
+
+        finally:
+        # 🔒 Always close connection
+            conn.close()
+
         return redirect(f"/history/{patient_id}")
-
-    # ✅ GET request → show form
-    conn.close()
-    return render_template(
-        "add_payment.html",
-        patient=patient,
-        pending_credit=pending_credit
-    )
 
 
 @app.route("/add_family_member", methods=["POST"])
@@ -687,7 +719,41 @@ def add_family_member():
     conn.close()
 
     return redirect(url_for("add_visit_page", patient_id=patient_id))
+@app.route("/api/search_patient")
+def search_patient():
+    q = request.args.get("q", "").lower()
 
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT p.id, p.name, p.age, p.gender, c.mobile, p.address,
+       MAX(v.date)
+FROM patients p
+JOIN contacts c ON p.contact_id = c.id
+LEFT JOIN visits v ON p.id = v.patient_id
+WHERE LOWER(p.name) LIKE ?
+   OR c.mobile LIKE ?
+   OR LOWER(p.address) LIKE ?
+GROUP BY p.id
+LIMIT 10
+    """, (f"%{q}%", f"%{q}%", f"%{q}%"))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return jsonify([
+        {
+            "id": r[0],
+            "name": r[1],
+            "age": r[2],
+            "gender": r[3],
+            "mobile": r[4],
+            "address": r[5] or "",
+    "last_visit": str(r[6]) if r[6] else "No visits yet"
+        }
+        for r in rows
+    ])
 @app.route("/force_add_patient", methods=["POST"])
 @login_required
 def force_add_patient():
@@ -835,7 +901,56 @@ def smart_search():
         patients=patients
     )
 
+# ─────────────────────────────────────────────────────────────
+# ADD THIS ROUTE TO YOUR app.py
+# Medicines autocomplete API  →  GET /api/medicines?q=para
+# ─────────────────────────────────────────────────────────────
 
+@app.route("/api/medicines")
+def api_medicines():
+    from flask import jsonify, request as req
+    query = req.args.get("q", "").strip()
+    if len(query) < 2:
+        return jsonify([])
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+    contains = f"%{query}%"
+
+    # Slot 1: names that START with the query (max 3)
+    c.execute("""
+        SELECT name, composition FROM medicines
+        WHERE name LIKE ? COLLATE NOCASE
+        LIMIT 3
+    """, (f"{query}%",))
+    name_starts = c.fetchall()
+
+    # Slot 2: composition contains query — Dolo, Calpol etc (max 5)
+    done = [r[0] for r in name_starts]
+    placeholders = ",".join("?" * len(done)) if done else "NULL"
+    c.execute(f"""
+        SELECT name, composition FROM medicines
+        WHERE composition LIKE ? COLLATE NOCASE
+          AND name NOT IN ({placeholders})
+        ORDER BY length(name)
+        LIMIT 5
+    """, [contains] + done)
+    comp_matches = c.fetchall()
+
+    # Slot 3: names that CONTAIN query anywhere (max 2 fillers)
+    done2 = [r[0] for r in name_starts + comp_matches]
+    placeholders2 = ",".join("?" * len(done2)) if done2 else "NULL"
+    c.execute(f"""
+        SELECT name, composition FROM medicines
+        WHERE name LIKE ? COLLATE NOCASE
+          AND name NOT IN ({placeholders2})
+        LIMIT 2
+    """, [contains] + done2)
+    name_contains = c.fetchall()
+
+    conn.close()
+    results = name_starts + comp_matches + name_contains
+    return jsonify([{"name": r[0], "composition": r[1]} for r in results])
 @app.route("/today")
 @login_required
 def today_opd():
